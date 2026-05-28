@@ -1,0 +1,16 @@
+{
+  "name": "wechat-ilink-bot-cloudflare-worker-example",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "@sky9464/weixin-bot": "^0.0.1",
+    "hono": "^4.12.23"
+  },
+  "devDependencies": {
+    "wrangler": "^4.4.0"
+  }
+}

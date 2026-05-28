@@ -1,0 +1,9 @@
+.env
+.env.*
+examples/.env
+examples
+test
+tests
+__tests__
+coverage
+*.log

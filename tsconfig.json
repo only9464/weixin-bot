@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "declaration": true,
+    "sourceMap": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "noEmitOnError": true,
+    "rewriteRelativeImportExtensions": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"],
+  "exclude": [
+    "examples",
+    "test",
+    "tests",
+    "__tests__",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}
