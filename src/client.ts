@@ -46,14 +46,14 @@ export class WeixinBot {
 
   setBotToken(token: string): this {
     this.credentialDraft.token = requireNonEmpty(token, 'Bot token')
-    console.log(`手动设置BotToken: ${this.credentialDraft.token}`)
+    // console.log(`手动设置BotToken: ${this.credentialDraft.token}`)
     this.applyCredentialDraft()
     return this
   }
 
   setIlinkUserId(userId: string): this {
     this.credentialDraft.userId = requireNonEmpty(userId, 'iLink user id')
-    console.log(`手动设置IlinkUserId: ${this.credentialDraft.userId}`)
+    // console.log(`手动设置IlinkUserId: ${this.credentialDraft.userId}`)
     this.applyCredentialDraft()
     return this
   }
@@ -71,7 +71,7 @@ export class WeixinBot {
   }
   setIlinkBotId(accountId: string): this {
     this.credentialDraft.accountId = requireNonEmpty(accountId, 'iLink bot id')
-    console.log(`手动设置IlinkBotId: ${this.credentialDraft.accountId}`)
+    // console.log(`手动设置IlinkBotId: ${this.credentialDraft.accountId}`)
     this.applyCredentialDraft()
     return this
   }

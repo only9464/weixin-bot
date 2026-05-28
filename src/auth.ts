@@ -57,10 +57,10 @@ export async function login(options: LoginOptions = {}): Promise<Credentials> {
           accountId: status.ilink_bot_id,
           userId: status.ilink_user_id,
         }
-        console.log(`bot_token: ${credentials.token}`)
-        console.log(`baseUrl: ${credentials.baseUrl}`)
-        console.log(`accountId: ${credentials.accountId}`)
-        console.log(`userId: ${credentials.userId}`)
+        // console.log(`bot_token: ${credentials.token}`)
+        // console.log(`baseUrl: ${credentials.baseUrl}`)
+        // console.log(`accountId: ${credentials.accountId}`)
+        // console.log(`userId: ${credentials.userId}`)
         return credentials
       }
 

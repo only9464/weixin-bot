@@ -3,10 +3,13 @@
   "name": "wechat-ilink-bot-cloudflare-worker-example",
   "main": "src/index.ts",
   "compatibility_date": "2026-05-27",
-  "vars": {
-    "BOT_TOKEN": "",
-    "ILINK_USER_ID": "",
-    "CONTEXT_TOKEN": ""
+  // "vars": {
+  //   "BOT_TOKEN": "",
+  //   "ILINK_USER_ID": "",
+  //   "CONTEXT_TOKEN": ""
+  // },
+  "triggers": {
+    "crons": ["0 16 * * *"]
   },
   // "compatibility_flags": [
   //   "nodejs_compat"
@@ -40,4 +43,37 @@
   //   "enabled": true,
   //   "head_sampling_rate": 1
   // }
+  "kv_namespaces": [
+    {
+    "binding": "WECHAT_BOT_KV",
+    "id": "70449b9d1ff0449eba43ab8b051351e1"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
+  },
+  "secrets_store_secrets": [
+    {
+      "binding": "BOT_TOKEN",
+      "store_id": "e76b1df106324c43a06ba2f401380571",
+      "secret_name": "BOT_TOKEN"
+    },
+    {
+      "binding": "ILINK_USER_ID",
+      "store_id": "e76b1df106324c43a06ba2f401380571",
+      "secret_name": "ILINK_USER_ID"
+    },
+  ]
 }

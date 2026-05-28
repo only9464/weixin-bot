@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
-import { sendMessage, useWeixinBot, type Env } from './weixin-bot'
+import { sendRunningStatusMessage } from './schedule'
+import { sendMessage, useWeixinBot, type Bindings, type Env } from './weixin-bot'
 
 const app = new Hono<Env>()
 
@@ -10,4 +11,9 @@ app.get('/', async (c) => {
   return c.text('机器人已上线')
 })
 
-export default app
+export default {
+  fetch: app.fetch,
+  scheduled(_controller, env, ctx): void {
+    ctx.waitUntil(sendRunningStatusMessage(env))
+  },
+} satisfies ExportedHandler<Bindings>

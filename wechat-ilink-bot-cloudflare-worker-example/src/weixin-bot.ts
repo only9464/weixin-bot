@@ -2,10 +2,12 @@ import type { Context } from 'hono'
 import { createMiddleware } from 'hono/factory'
 import { WeixinBot } from '@sky9464/weixin-bot'
 
+const CONTEXT_TOKEN_KEY = 'CONTEXT_TOKEN'
+
 export type Bindings = {
-  BOT_TOKEN: string
-  ILINK_USER_ID: string
-  CONTEXT_TOKEN: string
+  WECHAT_BOT_KV: KVNamespace
+  BOT_TOKEN: SecretsStoreSecret
+  ILINK_USER_ID: SecretsStoreSecret
 }
 
 export type Env = {
@@ -17,22 +19,45 @@ export type Env = {
 }
 
 type AppContext = Context<Env>
+type MessageTarget = {
+  bot: WeixinBot
+  userId: string
+}
 
 export const useWeixinBot = createMiddleware<Env>(async (c, next) => {
-  c.set('bot', createBot(c.env))
-  c.set('ilinkUserId', c.env.ILINK_USER_ID)
+  const { bot, ilinkUserId } = await createBot(c.env)
+
+  c.set('bot', bot)
+  c.set('ilinkUserId', ilinkUserId)
   await next()
 })
 
-export function createBot(env: Bindings): WeixinBot {
-  const bot = new WeixinBot()
-    .setBotToken(env.BOT_TOKEN)
-    .setIlinkUserId(env.ILINK_USER_ID)
-    .setContextToken(env.CONTEXT_TOKEN)
+export async function createBot(env: Bindings): Promise<{ bot: WeixinBot; ilinkUserId: string }> {
+  const [botToken, ilinkUserId, contextToken] = await Promise.all([
+    env.BOT_TOKEN.get(),
+    env.ILINK_USER_ID.get(),
+    env.WECHAT_BOT_KV.get(CONTEXT_TOKEN_KEY),
+  ])
 
-  return bot
+  if (!contextToken) {
+    throw new Error(`Missing KV key: ${CONTEXT_TOKEN_KEY}`)
+  }
+
+  const bot = new WeixinBot()
+    .setBotToken(botToken)
+    .setIlinkUserId(ilinkUserId)
+    .setContextToken(contextToken)
+
+  return { bot, ilinkUserId }
 }
 
-export async function sendMessage(c: AppContext, text: string, userId = c.var.ilinkUserId): Promise<void> {
-  await c.var.bot.send(userId, text)
+export async function sendMessage(c: AppContext, text: string, userId?: string): Promise<void>
+export async function sendMessage(target: MessageTarget, text: string): Promise<void>
+export async function sendMessage(target: AppContext | MessageTarget, text: string, userId?: string): Promise<void> {
+  if ('bot' in target) {
+    await target.bot.send(target.userId, text)
+    return
+  }
+
+  await target.var.bot.send(userId ?? target.var.ilinkUserId, text)
 }
