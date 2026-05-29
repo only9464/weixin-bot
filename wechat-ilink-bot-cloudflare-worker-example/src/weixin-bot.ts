@@ -1,47 +1,21 @@
-import type { Context } from 'hono'
-import { createMiddleware } from 'hono/factory'
 import { WeixinBot } from '@sky9464/weixin-bot'
+import { getWeixinBotEnv, saveContextToken } from './utils/env'
 
-export const CONTEXT_TOKEN_KEY = 'CONTEXT_TOKEN'
-
-export type Bindings = {
-  WECHAT_BOT_KV: KVNamespace
-  BOT_TOKEN: SecretsStoreSecret
-  ILINK_USER_ID: SecretsStoreSecret
-}
-
-export type Env = {
-  Bindings: Bindings
-  Variables: {
-    bot: WeixinBot
-    ilinkUserId: string
-  }
-}
-
-type AppContext = Context<Env>
-type MessageTarget = {
+const RUNNING_STATUS_MESSAGE = '新的一天，新的开始！'
+type WeixinBotSession = {
   bot: WeixinBot
-  userId: string
+  ilinkUserId: string
+  contextToken: string
 }
 
-export const useWeixinBot = createMiddleware<Env>(async (c, next) => {
-  const { bot, ilinkUserId } = await createBot(c.env)
+function getBeijingISOString(): string {
+  return new Date().toLocaleString('sv-SE', {
+    timeZone: 'Asia/Shanghai',
+  })
+}
 
-  c.set('bot', bot)
-  c.set('ilinkUserId', ilinkUserId)
-  await next()
-})
-
-export async function createBot(env: Bindings): Promise<{ bot: WeixinBot; ilinkUserId: string; contextToken: string }> {
-  const [botToken, ilinkUserId, contextToken] = await Promise.all([
-    env.BOT_TOKEN.get(),
-    env.ILINK_USER_ID.get(),
-    env.WECHAT_BOT_KV.get(CONTEXT_TOKEN_KEY),
-  ])
-
-  if (!contextToken) {
-    throw new Error(`Missing KV key: ${CONTEXT_TOKEN_KEY}`)
-  }
+async function createBot(): Promise<WeixinBotSession> {
+  const { botToken, ilinkUserId, contextToken } = await getWeixinBotEnv()
 
   const bot = new WeixinBot()
     .setBotToken(botToken)
@@ -51,13 +25,29 @@ export async function createBot(env: Bindings): Promise<{ bot: WeixinBot; ilinkU
   return { bot, ilinkUserId, contextToken }
 }
 
-export async function sendMessage(c: AppContext, text: string, userId?: string): Promise<void>
-export async function sendMessage(target: MessageTarget, text: string): Promise<void>
-export async function sendMessage(target: AppContext | MessageTarget, text: string, userId?: string): Promise<void> {
-  if ('bot' in target) {
-    await target.bot.send(target.userId, text)
-    return
-  }
+async function sendMessage(text: string, userId?: string): Promise<void> {
+  const { bot, ilinkUserId } = await createBot()
+  await bot.send(userId ?? ilinkUserId, text)
+}
 
-  await target.var.bot.send(userId ?? target.var.ilinkUserId, text)
+export async function getLatestTokenOnce(): Promise<string> {
+  try {
+    const { bot, ilinkUserId } = await createBot()
+    const latestContextToken = await bot.getLatestTokenOnce(ilinkUserId)
+
+    if (latestContextToken) {
+      console.log('获取到最新的上下文令牌:', latestContextToken)
+      await saveContextToken(latestContextToken)
+    }
+
+    return latestContextToken
+  } catch (error) {
+    console.error('更新上下文令牌失败:', error instanceof Error ? error.message : String(error))
+    throw error
+  }
+}
+
+export async function sendRunningStatusMessage(): Promise<void> {
+  const currentBeijingTime = getBeijingISOString()
+  await sendMessage(`${currentBeijingTime}\n${RUNNING_STATUS_MESSAGE}`)
 }

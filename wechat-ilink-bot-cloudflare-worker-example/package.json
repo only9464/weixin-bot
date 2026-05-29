@@ -6,11 +6,11 @@
     "deploy": "wrangler deploy --minify"
   },
   "dependencies": {
-    "@sky9464/weixin-bot": "^0.0.4",
+    "@sky9464/weixin-bot": "^0.0.5",
     "hono": "^4.12.23"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260528.1",
+    "@cloudflare/workers-types": "^4.20260529.1",
     "wrangler": "^4.4.0"
   }
 }
