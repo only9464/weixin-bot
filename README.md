@@ -217,6 +217,19 @@ await bot.stopTyping('ilink-user-id')
 
 如果当前没有该用户的 `context_token`，这个方法会直接返回。
 
+### `await bot.getLatestTokenOnce(userId?, timeoutMs?)`
+
+短超时检查一次 `getupdates`，并返回指定用户在这次响应中的最新 `context_token`。默认最多等待 2 秒；如果没有新消息，或者这次响应里没有目标用户的新 `context_token`，会返回空字符串。
+
+```ts
+const contextToken = await bot.getLatestTokenOnce('ilink-user-id')
+if (contextToken) {
+  console.log(contextToken)
+}
+```
+
+这个方法会推进内部游标，并缓存返回消息里的 `context_token`，但不会触发 `onMessage` 处理器，也不会进入长轮询重试循环。
+
 ### `await bot.getLatestToken(userId?)`
 
 尝试从最新的 `getupdates` 返回结果中刷新并返回指定用户的 `context_token`。

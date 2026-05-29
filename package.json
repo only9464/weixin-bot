@@ -1,6 +1,6 @@
 {
   "name": "@sky9464/weixin-bot",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "WeChat iLink Bot SDK for typescript, compatible with Cloudflare Workers and Node.js",
   "type": "module",
   "private": false,

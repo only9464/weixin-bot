@@ -9,7 +9,11 @@
   //   "CONTEXT_TOKEN": ""
   // },
   "triggers": {
-    "crons": ["0 16 * * *"]
+    // "crons": ["*/1 * * * *"]
+    "crons": [
+      "0 16 * * *",
+      "*/1 * * * *"
+    ]
   },
   // "compatibility_flags": [
   //   "nodejs_compat"

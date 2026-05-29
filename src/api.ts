@@ -144,13 +144,33 @@ export async function getUpdates(
   buf: string,
   signal?: AbortSignal,
 ): Promise<GetUpdatesResp> {
-  const body: GetUpdatesReq = {
-    get_updates_buf: buf,
-    base_info: buildBaseInfo(),
-  }
+  const body = buildGetUpdatesBody(buf)
 
   // return apiFetch<GetUpdatesResp>(baseUrl, '/ilink/bot/getupdates', body, token, 40_000, signal, 'getUpdates')
   return apiFetch<GetUpdatesResp>(baseUrl, '/ilink/bot/getupdates', body, token, 40_000, signal)
+}
+
+export async function getUpdatesOnce(
+  baseUrl: string,
+  token: string,
+  buf: string,
+  timeoutMs = 2_000,
+): Promise<GetUpdatesResp> {
+  const body = buildGetUpdatesBody(buf)
+
+  try {
+    return await apiFetch<GetUpdatesResp>(baseUrl, '/ilink/bot/getupdates', body, token, timeoutMs)
+  } catch (error) {
+    if (isTimeoutError(error)) {
+      return {
+        ret: 0,
+        msgs: [],
+        get_updates_buf: buf,
+      }
+    }
+
+    throw error
+  }
 }
 
 export async function sendMessage(
@@ -235,4 +255,15 @@ export function buildTextMessage(userId: string, contextToken: string, text: str
       },
     ],
   }
+}
+
+function buildGetUpdatesBody(buf: string): GetUpdatesReq {
+  return {
+    get_updates_buf: buf,
+    base_info: buildBaseInfo(),
+  }
+}
+
+function isTimeoutError(error: unknown): boolean {
+  return error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')
 }

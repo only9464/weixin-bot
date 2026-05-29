@@ -2,7 +2,7 @@ import type { Context } from 'hono'
 import { createMiddleware } from 'hono/factory'
 import { WeixinBot } from '@sky9464/weixin-bot'
 
-const CONTEXT_TOKEN_KEY = 'CONTEXT_TOKEN'
+export const CONTEXT_TOKEN_KEY = 'CONTEXT_TOKEN'
 
 export type Bindings = {
   WECHAT_BOT_KV: KVNamespace
@@ -32,7 +32,7 @@ export const useWeixinBot = createMiddleware<Env>(async (c, next) => {
   await next()
 })
 
-export async function createBot(env: Bindings): Promise<{ bot: WeixinBot; ilinkUserId: string }> {
+export async function createBot(env: Bindings): Promise<{ bot: WeixinBot; ilinkUserId: string; contextToken: string }> {
   const [botToken, ilinkUserId, contextToken] = await Promise.all([
     env.BOT_TOKEN.get(),
     env.ILINK_USER_ID.get(),
@@ -48,7 +48,7 @@ export async function createBot(env: Bindings): Promise<{ bot: WeixinBot; ilinkU
     .setIlinkUserId(ilinkUserId)
     .setContextToken(contextToken)
 
-  return { bot, ilinkUserId }
+  return { bot, ilinkUserId, contextToken }
 }
 
 export async function sendMessage(c: AppContext, text: string, userId?: string): Promise<void>

@@ -1,4 +1,13 @@
-import { ApiError, DEFAULT_BASE_URL, buildTextMessage, getUpdates, sendMessage, getConfig, sendTyping as apiSendTyping } from './api.ts'
+import {
+  ApiError,
+  DEFAULT_BASE_URL,
+  buildTextMessage,
+  getUpdates,
+  getUpdatesOnce as apiGetUpdatesOnce,
+  sendMessage,
+  getConfig,
+  sendTyping as apiSendTyping,
+} from './api.ts'
 import { login, type Credentials } from './auth.ts'
 import { delay } from './runtime.ts'
 import {
@@ -66,7 +75,7 @@ export class WeixinBot {
     }
 
     this.contextTokens.set(userId, token)
-    console.log(`手动设置ContextToken: ${token}`)
+    // console.log(`手动设置ContextToken: ${token}`)
     return this
   }
   setIlinkBotId(accountId: string): this {
@@ -161,6 +170,29 @@ export class WeixinBot {
 
     if (!latestContextToken) {
       throw new Error(`No cached context token for user ${targetUserId}. Receive a message or call setContextToken first.`)
+    }
+
+    return latestContextToken
+  }
+
+  async getLatestTokenOnce(userId?: string, timeoutMs = 2_000): Promise<string> {
+    const targetUserId = userId ?? this.credentials?.userId ?? this.credentialDraft.userId
+    if (!targetUserId) {
+      throw new Error('User id is required to get latest context token.')
+    }
+
+    const credentials = await this.ensureCredentials()
+    const updates = await apiGetUpdatesOnce(this.baseUrl, credentials.token, this.cursor, timeoutMs)
+
+    this.cursor = updates.get_updates_buf || this.cursor
+
+    let latestContextToken = ''
+    for (const raw of updates.msgs ?? []) {
+      this.rememberContext(raw)
+
+      if (getMessageUserId(raw) === targetUserId && raw.context_token) {
+        latestContextToken = raw.context_token
+      }
     }
 
     return latestContextToken
